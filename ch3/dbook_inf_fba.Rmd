@@ -1,0 +1,100 @@
+---
+title: "Statistical Inference"
+author: "Jin Kim"
+date: "Sunday, April 19, 2015"
+output: html_document
+---
+```{r, message=FALSE}
+source("dbook/dbook.R")
+check.and.install.packages("plyr")
+check.and.install.packages("dplyr")
+check.and.install.packages("ggplot2")
+check.and.install.packages("tidyr")
+check.and.install.packages("knitr")
+check.and.install.packages("pwr")
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(pwr)
+```
+
+```{r}
+ht = read.table("ch3/fba.txt", header = T)
+kable(head(ht, 10))
+htl = gather(ht, type, distance, -Trial)
+```
+
+# Exploratory Analysis
+
+```{r}
+par(mfrow=c(1,2))
+plot(ht$Air, xlab="Trial", ylab="Distance (air-filled)"); lines(supsmu(ht$Trial, ht$Air))
+plot(ht$Helium, xlab="Trial", ylab="Distance (helium-filled)"); lines(supsmu(ht$Trial, ht$Helium))
+plot(density(ht$Air - ht$Helium))
+boxplot(distance ~ type, htl)
+```
+
+# Row Filtering
+
+```{r}
+par(mfrow=c(1,2))
+htf = filter(ht, Air >= 15 & Helium >= 15)
+htf
+plot(density(htf$Helium - htf$Air))
+htfl = gather(htf, type, distance, -Trial)
+boxplot(distance ~ type, htfl)
+#htf = filter(htl, distance > 20)
+```
+
+# Sampling Distribution
+
+```{r}
+
+```
+
+
+# Confidence Interval
+
+```{r}
+par(mfrow=c(1,1))
+htf$Diff = htf$Helium - htf$Air
+kable(head(htf, 10))
+#eval.ci(htf$Diff, 0.90)
+eval.ci(htf$Diff, debug=T)
+```
+
+
+# Hypothesis Testing
+```{r}
+t.test(ht$Air, ht$Helium)
+t.test(ht$Air, ht$Helium, paired = T)
+t.test(htf$Air, htf$Helium, paired = T)
+#summary(lm(distance ~ type, htf))
+```
+
+# Power Analysis
+```{r}
+cohen.d = mean(htf$Diff) / (sd(htf$Air)/2+sd(htf$Helium)/2)
+pwr.t.test(35, cohen.d, power = 0.8, sig.level=NULL, type = c("paired"))
+pwr.t.test(35, cohen.d, power = NULL, sig.level=0.129, type = c("paired"))
+pwr.t.test(35, cohen.d, power = NULL, sig.level=0.05, type = c("paired"))
+pwr.t.test(n=NULL, cohen.d, power = 0.8, sig.level=0.05, type = c("paired"))
+```
+
+
+
+# Simulation
+```{r}
+t.test.sample <- function(){
+  adply(c(1:1000),1, function(i){
+    tbl = sample_n(htf, 61, replace = T)
+    res = eval.ci(tbl$Air-tbl$Helium, boot.r=100)
+    res$p.value = t.test(tbl$Air, tbl$Helium, paired = T)$p.value
+    res      
+  })
+}
+summary(t.test.sample())
+```
+
