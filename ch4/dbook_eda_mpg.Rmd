@@ -96,7 +96,11 @@ cyl ~ drv
 kable(table(mpg$cyl, mpg$drv))
 
 par(mfrow=c(1,1))
-mosaicplot(table(mpg$drv, mpg$cyl), cex=1.2, main="")
+mosaicplot(table(mpg$year, mpg$drv), cex=1.2, main="")
+
+par(mfrow=c(1,1))
+mosaicplot(table(mpg$year, mpg$drv, mpg$cyl), cex=1.2, main="")
+
 ```
 
 ### Categorical vs. Numerical Attribute
@@ -176,7 +180,7 @@ plot.models.zoom
 mpg1 = filter(mpg, year == 1999)
 mpg2 = filter(mpg, year == 2008)
 mpg12 = merge(mpg1, mpg2, by=c("model", "displ", "drv", "trans", "cyl" ,"fl"))
-select(mpg12, model, displ, drv, trans, cyl, fl, year.x, hwy.x, year.y, hwy.y)
+mpg12 %>% dplyr::select(model, displ, drv, trans, cyl, fl, year.x, hwy.x, year.y, hwy.y) %>% arrange(hwy.y - hwy.x)
 mpg12n = rbind(transmute(mpg12, year = year.x, hwy = hwy.x), transmute(mpg12, year = year.y, hwy = hwy.y))
 t.test(mpg12$cty.x, mpg12$cty.y, paired=T)
 t.test(mpg12$hwy.x, mpg12$hwy.y, paired=T)
@@ -190,4 +194,68 @@ p2 = ggplot() + geom_segment(data = mpg12, aes(x=1999, xend=2008, y=hwy.x, yend=
 	labs(x="year", y="hwy")
 multiplot(p1, p2, cols = 2)
 ```
+
+## Can we predict MPG?
+
+```{r}
+get.ml1 <- function(tbl){
+	lm(hwy ~ displ + cyl + year, data=tbl)
+}
+
+get.ml2 <- function(tbl){
+	lm(hwy ~ displ + cyl + year + class, data=tbl)
+}
+
+get.ml3 <- function(tbl){
+	lm(hwy ~ displ + cyl + year + class + model + manufacturer, data=tbl)
+}
+
+
+eval.model <- function(cvt, fun.model, ratio.train = 0.5){
+	set.seed(1)
+	cvt$fold = rbinom(nrow(cvt), 1, ratio.train)
+	cvtr = cvt[cvt$fold == 1,]
+	cvte = cvt[cvt$fold == 0,]
+	cvtr$res = predict(fun.model(cvtr), cvtr)
+	cvte$res = predict(fun.model(cvtr), cvte)
+	list(r=cvtr, e=cvte)
+}
+```
+
+
+```{r}
+ml1 = get.ml1(mpg)
+round(ml1$coefficients, 3)
+summary(ml1)
+plot(mpg$hwy, ml1$fitted.values, xlab="Actual MPG", ylab="Predicted MPG")
+lines(c(0,40), c(0, 40))
+cl1 = eval.model(mpg, get.ml1, 0.5)
+plot(cl1$r$hwy, cl1$r$res, col="blue", xlab="Actual MPG", ylab="Predicted MPG")
+points(cl1$e$hwy, cl1$e$res, col="red")
+lines(c(0,40), c(0, 40))
+identify(cl1$e$hwy, cl1$e$res, labels=paste(cl1$e$model, cl1$e$fl, cl1$e$year))
+rmse(cl1$e$hwy, cl1$e$res)
+rmse(cl1$r$hwy, cl1$r$res)
+```
+
+```{r}
+ml2 = get.ml2(mpg)
+plot(mpg$hwy, ml2$fitted.values, xlab="Actual MPG", ylab="Predicted MPG")
+lines(c(0,40), c(0, 40))
+cl2 = eval.model(mpg, get.ml2)
+plot(cl2$r$hwy, cl2$r$res, col="blue", xlab="Actual MPG", ylab="Predicted MPG")
+points(cl2$e$hwy, cl2$e$res, col="red")
+lines(c(0,40), c(0, 40))
+rmse(cl2$e$hwy, cl2$e$res)
+rmse(cl2$r$hwy, cl2$r$res)
+
+ml3 = get.ml3(mpg)
+plot(mpg$hwy, ml3$fitted.values)
+cl3 = eval.model(mpg, get.ml3)
+plot(cl3$r$hwy, cl3$r$res, col="blue")
+points(cl3$e$hwy, cl3$e$res, col="red")
+rmse(cl3$e$hwy, cl3$e$res)
+rmse(cl3$r$hwy, cl3$r$res)
+```
+
 

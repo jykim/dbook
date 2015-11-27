@@ -1,0 +1,309 @@
+---
+title: "Titanic Prediction"
+author: "Jin Kim"
+date: "Thursday, April 30, 2015"
+output: html_document
+---
+
+# Initialize the Data
+
+```{r, eval=FALSE}
+install.packages('rattle')
+install.packages('rpart.plot')
+install.packages('RColorBrewer')
+install.packages('party')
+install.packages('devtools')
+install.packages('caret')
+install.packages('pROC')
+
+if (!requireNamespace('htmlwidgets') || packageVersion('htmlwidgets') <= '0.3.2')
+  devtools::install_github('ramnathv/htmlwidgets')
+devtools::install_github('rstudio/DT')
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+PATH = "c:/src/root/dbook"
+setwd(PATH)
+train <- read.csv("ch5/train.csv")
+test <- read.csv("ch5/test.csv")
+#all <- rbind(train, test)
+
+# Install and load required packages for fancy decision tree plotting
+library(rpart)
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+library(randomForest)
+library(stringr)
+library(party)
+library(plyr)
+library(caret)
+library(dplyr)
+library(pROC)
+library(DT)
+```
+
+# Exploratory Analysis
+
+## Explore Raw Data
+
+```{r}
+datatable(train)
+```
+
+## Summary Statistics
+
+```{r}
+summary(train)
+str(train)
+```
+
+## Attribute Relationship
+
+```{r}
+#mosaicplot(table(train$Survived, train$Embarked))
+table(train$Survived, train$Sex)
+table(train$Survived, train$Pclass)
+table(train$Survived, train$Pclass, train$Sex)
+
+par(mfrow=c(1,2))
+mosaicplot(table(ifelse(train$Survived==1, "Survived","Dead"), train$Sex), main="", cex=1.2)
+mosaicplot(table(ifelse(train$Survived==1, "Survived","Dead"), train$Pclass), main="", cex=1.2)
+
+#par(mfrow=c(1,1))
+#mosaicplot(table(train$Survived, train$Pclass, train$Sex), main="")
+```
+
+```{r}
+par(mfrow=c(1,3))
+boxplot(Age ~ Survived, train, xlab="Survival", ylab="Age", cex=1.2)
+plot(density(train[train$Survived==1 & !is.na(train$Age),"Age"]), ylim=c(0,0.04), xlab="Age Distribution for Survivors vs. \nNon-survivors (dashed)", main="", cex=1.2) 
+lines(density(train[train$Survived==0 & !is.na(train$Age),"Age"]), lty=2)
+plot(Age ~ jitter(Survived), train, cex=1.2)
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(density(train$Fare), main="", xlab="Fare Distribution")
+plot(density(train[!is.na(train$Age),]$Age), main="", xlab="Age Distribution")
+qplot(jitter(Age), jitter(log(Fare)), data=train, color=factor(Survived), size=2)
+qplot(jitter(Age), jitter(log(Fare)), data=train, color=factor(Survived), shape=factor(Sex), size=2)
+```
+
+
+# Model Fitting
+
+## Decision Tree
+
+```{r}
+fit <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train, method="class")
+fit
+
+# Plot it with base-R
+plot(fit)
+text(fit)
+
+# And then make it look better with fancyRpartPlot!
+fancyRpartPlot(fit)
+```
+
+
+# Feature Engineering
+
+```{r}
+# Join together the test and train sets for easier feature engineering
+test$Survived <- NA
+combi <- rbind(train, test)
+combi$Name <- as.character(combi$Name)
+```
+
+## Title Feature
+
+```{r}
+combi$Title = word(combi$Name, 2, sep="[,.]")
+combi$Title[combi$Title %in% c('Mme', 'Mlle')] <- 'Mlle'
+combi$Title[combi$Title %in% c('Capt', 'Don', 'Major', 'Sir')] <- 'Sir'
+combi$Title[combi$Title %in% c('Dona', 'Lady', 'the Countess', 'Jonkheer')] <- 'Lady'
+combi$Title <- factor(combi$Title)
+
+table(combi$Title)
+```
+
+# Family size Feature
+
+```{r}
+combi$FamilySize <- combi$SibSp + combi$Parch + 1
+combi$Surname <- word(combi$Name, 1, sep="[,.]")
+combi$FamilyID <- paste(as.character(combi$FamilySize), combi$Surname, sep="")
+combi$FamilyID[combi$FamilySize <= 2] <- 'Small'
+
+famIDs <- data.frame(table(combi$FamilyID))
+famIDs <- famIDs[famIDs$Freq <= 2,]
+combi$FamilyID[combi$FamilyID %in% famIDs$Var1] <- 'Small'
+combi$FamilyID <- factor(combi$FamilyID)
+
+table(combi$FamilyID)
+```
+
+```{r}
+# New factor for Random Forests, only allowed <32 levels, so reduce number
+combi$FamilyID2 <- combi$FamilyID
+combi$FamilyID2 <- as.character(combi$FamilyID2)
+combi$FamilyID2[combi$FamilySize <= 3] <- 'Small'
+# And convert back to factor
+combi$FamilyID2 <- factor(combi$FamilyID2)
+table(combi$FamilyID2)
+```
+
+## Fill in Missing Values
+```{r}
+# Fill in Age NAs
+summary(combi$Age)
+Agefit <- rpart(Age ~ Pclass + Sex + SibSp + Parch + Fare + Embarked + Title + FamilySize, 
+                data=combi[!is.na(combi$Age),], method="anova")
+combi$Age[is.na(combi$Age)] <- predict(Agefit, combi[is.na(combi$Age),])
+
+# Fill in Embarked blanks
+summary(combi$Embarked)
+which(combi$Embarked == '')
+combi$Embarked[c(62,830)] = "S"
+combi$Embarked <- factor(combi$Embarked)
+
+# Fill in Fare NAs
+summary(combi$Fare)
+which(is.na(combi$Fare))
+combi$Fare[1044] <- median(combi$Fare, na.rm=TRUE)
+```
+
+
+# Modeling
+
+## Evaluation
+```{r}
+# Split back into test and train sets
+train <- combi[1:891,]; test <- combi[892:1309,]
+```
+
+```{r}
+orp = train(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, 
+			trControl = trainControl(method="repeatedcv", repeats=3, classProbs=TRUE, summaryFunction = twoClassSummary), 
+			method="rpart", data=train, tuneLength=10, metric="ROC")
+train$res = predict.train(orp, train)
+confusionMatrix(train$res, train$Survived, positive = "1")
+```
+
+```{r}
+orp = train(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID2, 
+			trControl = trainControl(method="repeatedcv", repeats=3, classProbs=TRUE, summaryFunction = twoClassSummary), 
+			method="rpart", data=train, tuneLength=10, metric="ROC")
+train$res = predict.train(orp, train)
+confusionMatrix(train$res, train$Survived, positive = "1")
+```
+
+```{r}
+orp = train(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID2, 
+			trControl = trainControl(method="repeatedcv", repeats=3, classProbs=TRUE, summaryFunction = twoClassSummary), 
+			method="rf", data=train, tuneLength=10, metric="ROC")
+train$res = predict.train(orp, train)
+confusionMatrix(train$res, train$Survived, positive = "1")
+```
+
+
+## Error Analysis
+
+```{r}
+train.v = cbind(transmute(train, Actual = Survived, Predict = res , Delta = (as.numeric(as.character(Actual)) - as.numeric(as.character(Predict)))), dplyr::select(train, -Survived, -res, -FamilyID2))
+table(train.v$Delta)
+datatable(train.v, rownames = F)
+#write.table(train.v, "ch5/prediction.tsv", sep="\t", row.names = F)
+```
+
+```{r}
+featurePlot(x=dplyr::select(train.v, Age, Fare, Pclass, FamilySize), y=as.factor(train.v$Delta), 
+			plot="density", scales = list(x = list(relation="free"),y = list(relation="free")),
+                  adjust = 1.5, pch = "|", auto.key = list(columns = 3))
+```
+
+```{r}
+featurePlot(x=dplyr::select(train, Age, Fare, Pclass, FamilySize), y=as.factor(train$Survived), 
+			plot="box", scales = list(y = list(relation="free"), x = list(rot = 90)),
+                  auto.key = list(columns = 2))
+```
+
+
+# Submissions
+
+## Models
+```{r}
+mrp <- function(data){
+	rpart(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID,
+             data=data, method="class")
+}
+
+mrf <- function(data){
+	randomForest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID2, data=data, importance=TRUE, ntree=2000)
+}
+```
+
+## Decision Tree
+
+```{r}
+fit <- mrp(train)
+fancyRpartPlot(fit)
+
+# Now let's make a prediction and write a submission file
+Prediction <- predict(fit, test, type = "class")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = paste(PATH, "ch5/engineeredfeaturestree.csv", sep="/"), row.names = FALSE)
+```
+
+## Build Random Forest Ensemble
+
+```{r}
+set.seed(415)
+fit <- mrf(train)
+# Look at variable importance
+varImpPlot(fit)
+
+# Now let's make a prediction and write a submission file
+Prediction <- predict(fit, test)
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = paste(PATH, "ch5/firstforest.csv", sep="/"), row.names = FALSE)
+```
+
+
+# Deprecated
+
+<!--
+
+## Build condition inference tree Random Forest
+
+```{r, eval=FALSE}
+set.seed(415)
+fit <- mcf(train)
+# Now let's make a prediction and write a submission file
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = paste(PATH, "ch5/ciforest.csv", sep="/"), row.names = FALSE)
+```
+
+# Modeling (old)
+
+
+
+## Cross-validation
+
+```{r, eval=FALSE}
+source("dbook.R")
+
+crp = cval.model(train, mrp, 5)
+crf = cval.model(train, mrf, 5)
+
+trf = table(crf$Survived, crf$res)
+
+accuracy(trf)
+```
+
+-->

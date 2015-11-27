@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-source("dbook.R")
+source("../dbook.R")
 check.and.install.packages("dplyr")
 check.and.install.packages("ggplot2")
 check.and.install.packages("tidyr")
@@ -28,6 +28,7 @@ library(ridge)
 library(randomForest)
 library(leaps)
 library(dplyr)
+library(knitr)
 ```
 
 ```{r}
@@ -51,7 +52,9 @@ hist(Boston$medv, main="Density of Median Housing Prices (medv)")
 plot(density(Boston$medv), main="Density of Median Housing Prices (medv)")
 ```
 
-# Linear Model
+# Model Definition
+
+
 ```{r}
 lm.b <- function(dt){
 	res = lm(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + black + lstat, dt)
@@ -68,20 +71,47 @@ lm.r <- function(dt){
 	res
 }
 
+rpart.b <- function(dt){
+	res = rpart(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + black + lstat, dt)
+	res
+}
+
+rf.b <- function(dt){
+	res = randomForest(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + black + lstat, dt) #, proximity=TRUE
+	res
+}
 ```
+
+# Linear Model
 
 ```{r}
 lm1 = lm.b(Boston)
 summary(lm1)
+rpb = rpart.b(Boston)
+summary(rpb)
+plot(rpb)
+text(rpb)
+#fancyRpartPlot(rpb)
 rfb = rf.b(Boston)
 summary(rfb)
-rfb$importance
+#rfb$importance
 par(mfrow=c(1,2))
+plot(rfb, log="y", main="Error Rate ~ # of Trees")
+varImpPlot(rfb, main="Variable Importance")
+#MDSplot(rfb, Boston$medv)
+```
+
+
+```{r}
+par(mfrow=c(1,3))
 plot(Boston$medv, lm1$fitted.values, ylim=c(0,50), xlab="Actual Housing Prices", ylab="Predicted Housing Prices", main="Linear Regression")
 lines(loess.smooth(Boston$medv, lm1$fitted.values))
+plot(Boston$medv, predict(rpb),  ylim=c(0,50), xlab="Actual Housing Prices", ylab="Predicted Housing Prices", main="Decision Tree")
+lines(loess.smooth(Boston$medv, predict(rpb)))
 plot(Boston$medv, rfb$predicted,  ylim=c(0,50), xlab="Actual Housing Prices", ylab="Predicted Housing Prices", main="RandomForest")
 lines(loess.smooth(Boston$medv, rfb$predicted))
 rmse(Boston$medv, lm1$fitted.values)
+rmse(Boston$medv, predict(rpb))
 rmse(Boston$medv, rfb$predicted)
 ```
 
@@ -117,54 +147,54 @@ rmse(crt3$medv, crt3$res)
 
 # Linear Model vs. RandomForest
 
-## Model Definition
-```{r}
-rf.b <- function(dt){
-	res = randomForest(medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + black + lstat, dt)
-	res
-}
-```
 
 ## Cross-validation
 ```{r}
 crt1 = cval.model(Boston, lm.b, 3)
-crt2 = cval.model(Boston, rf.b, 3)
-par(mfrow=c(1,2))
+crt2 = cval.model(Boston, rpart.b, 3)
+crt3 = cval.model(Boston, rf.b, 3)
+par(mfrow=c(1,3))
 plot(crt1$medv, crt1$res)
 plot(crt2$medv, crt2$res)
+plot(crt3$medv, crt3$res)
 rmse(crt1$medv, crt1$res)
 rmse(crt2$medv, crt2$res)
+rmse(crt3$medv, crt3$res)
 ```
 
 ```{r}
 params = data.frame(k.fold = c(2, 3, 5, 10))
 res = mdply(params, function(k.fold){
 	cm1 = cval.model(Boston, lm.b, k.fold)
-	cm2 = cval.model(Boston, rf.b, k.fold)
-	data.frame(rmse.lm = rmse(cm1$medv, cm1$res), rmse.rf = rmse(cm2$medv, cm2$res))
+	cm2 = cval.model(Boston, rpart.b, k.fold)
+	cm3 = cval.model(Boston, rf.b, k.fold)
+	data.frame(rmse.lm = rmse(cm1$medv, cm1$res), rmse.rp = rmse(cm2$medv, cm2$res), rmse.rf = rmse(cm3$medv, cm3$res))
 })
-res
+kable(res)
 ```
 
 ## Varying the Amount of Training Data
 
 ```{r}
-source("dbook.R")
 rt = mdply(data.frame(rep = 1:10), function(rep){
 		mdply(data.frame(ratio.train = 1:19/20), function(ratio.train){
 		cm1 = eval.model(Boston, 14, lm.b, ratio.train)
-		cm2 = eval.model(Boston, 14, rf.b, ratio.train)
+		cm2 = eval.model(Boston, 14, rpart.b, ratio.train)
+		cm3 = eval.model(Boston, 14, rf.b, ratio.train)
 		#browser()
-		data.frame(rmse.elm = rmse(cm1$e$medv, cm1$e$res), rmse.erf = rmse(cm2$e$medv, cm2$e$res),
-				   rmse.rlm = rmse(cm1$r$medv, cm1$r$res), rmse.rrf = rmse(cm2$r$medv, cm2$r$res))
+		data.frame(rmse.elm = rmse(cm1$e$medv, cm1$e$res), rmse.erp = rmse(cm2$e$medv, cm2$e$res), rmse.erf = rmse(cm3$e$medv, cm3$e$res),
+				   rmse.rlm = rmse(cm1$r$medv, cm1$r$res), rmse.rrp = rmse(cm2$r$medv, cm2$r$res), rmse.rrf = rmse(cm3$r$medv, cm3$r$res))
 	})
 })
 rts = group_by(rt, ratio.train) %>%
 	summarise_each(funs(mean))
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 plot(rts$ratio.train, rts$rmse.elm, ylim=c(0,10), lty = 1, 
 	 xlab = "% Train Set", ylab = "RMSE", main = "Linear Model") #Train vs. Test Set Errors
 lines(rts$ratio.train, rts$rmse.rlm, lty=2)
+plot(rts$ratio.train, rts$rmse.erp, ylim=c(0,10), lty = 1, 
+	 xlab = "% Train Set", ylab = "RMSE", main = "Decision Tree") #Train vs. Test Set Errors
+lines(rts$ratio.train, rts$rmse.rrp, lty=2)
 plot(rts$ratio.train, rts$rmse.erf, ylim=c(0,10), lty = 1, 
 	 xlab = "% Training Data", ylab = "RMSE", main = "RandomForest") #Train vs. Test Set Errors
 lines(rts$ratio.train, rts$rmse.rrf, lty=2)

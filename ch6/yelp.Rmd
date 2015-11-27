@@ -1,0 +1,46 @@
+---
+title: "Yelp Dataset Exploration"
+output: html_document
+---
+```{r, include=FALSE}
+setwd("c:/src/root")
+SRC_PATH = "."
+source(paste(SRC_PATH,"lib/R/init.R",sep="/"))
+source(paste(SRC_PATH,"dbook/dbook.R",sep="/"))
+```
+
+```{r}
+yb = read.csv("F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.csv")
+yr = read.csv("F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_review.csv")
+yu = read.csv("F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_user.csv")
+```
+
+```{r}
+
+```
+
+
+```{r}
+yb %>% sample_n(1000) %>% select(business_id, categories, city, full_address, latitude, longitude, name, neighborhoods, open, review_count, stars, state, type)
+
+export.table( "F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business_sample.tsv")
+```
+
+```{r}
+ybr = merge(yb, select(yr, text, business_id, user_id, stars, date), by="business_id")
+ybru = merge(ybr, select(yu, user_id, review_count, average_stars, name, yelping_since), by="user_id")
+```
+
+```{r}
+yra = yr %>% group_by(business_id) %>% summarize(avg_star = mean(stars), sd_star = sd(stars))
+ybra = merge(yb, yra, by="business_id")
+export.table(ybru, "F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_combined.tsv")
+```
+
+```{r}
+export.table(filter(ybru, str_detect(categories, "Korean")), "F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_combined_korean.tsv")
+export.table(filter(ybru, categories == "Korean"), "F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_combined_korean.tsv")
+export.table(filter(ybru, categories == "Korean"), "F:/Sandbox/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_combined_korean.tsv")
+ 
+```
+
