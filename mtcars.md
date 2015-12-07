@@ -5,17 +5,15 @@ Saturday, May 02, 2015
 
 
 ```r
-install.packages("stringr")
-install.packages("ggplot2")
-install.packages("dplyr")
+setwd("c:/src/root/dbook")
+source("dbook.R")
+load.packages(c("stringr", "ggplot2", "dplyr"))
 ```
 
-
-```r
-library(stringr)
-library(ggplot2)
-library(dplyr)
-setwd("c:/src/root/dbook")
+```
+## [1] loading stringr
+## [1] loading ggplot2
+## [1] loading dplyr
 ```
 
 
@@ -24,21 +22,20 @@ setwd("c:/src/root/dbook")
 
 ```r
 v1 = 1
-
 v2 = "abc"
-
 v3 = c(1,2,3)
 
 df1 = data.frame(
 	Name=c("Jerry","Tom","Smith"),
 	Math=c(50,60,75))
+df1
 ```
 
 # Reading & Writing Data
 
 
 ```r
-write.table(mtcars, "clipboard")
+#write.table(mtcars, "clipboard")
 write.table(mtcars, "mtcars_new.txt")
 mcars = read.table("mtcars_new.txt", header=T)
 ```
@@ -222,10 +219,10 @@ mcars.small.narrow
 
 
 ```r
-mcars.small.narrow = # ????????? mcars.small.narrow?????? ????????? ????????????.
-	mcars %>% # mcars???????????? ????????????.
-	filter(cyl == 4) %>% # cyl?????? 4??? ???????????? ?????????.
-	select(maker, model, mpg, cyl) # ????????? ??? ????????? ????????????.
+mcars.small.narrow =               # 결과를 mcars.small.narrow라는 변수에 저장한다.
+	mcars %>%                        #  mcars 데이터를 사용한다.
+	filter(cyl == 4) %>%             # cyl 값이 4인 데이터만 남긴다.
+	select(maker, model, mpg, cyl) # # 주어진 네 속성만 선택한다.
 mcars.small.narrow
 ```
 
@@ -247,8 +244,8 @@ mcars.small.narrow
 ```r
 makers = 
 	mcars %>% 
-	group_by(maker) %>% # ????????? ???????????? ???????????? ????????????.
-	summarize( maker.mpg = mean(mpg), maker.count = n()) # ???????????? ?????? mpg??? ??? ?????? ??????
+	group_by(maker) %>% # 제조사 기준으로 데이터를 집계한다.
+	summarize( maker.mpg = mean(mpg), maker.count = n()) # 제조사별 평균 mpg및 차종수
 head(makers)
 ```
 
@@ -256,6 +253,7 @@ head(makers)
 ## Source: local data frame [6 x 3]
 ## 
 ##      maker maker.mpg maker.count
+##      (chr)     (dbl)       (int)
 ## 1      AMC      15.2           1
 ## 2 Cadillac      10.4           1
 ## 3   Camaro      13.3           1
@@ -333,5 +331,8 @@ qplot(wt, mpg, data=mcars, color=factor(cyl))
 qplot(wt, mpg, data=mcars, geom = c("point", "smooth"))
 ```
 
-![](mtcars_files/figure-html/ch2_plot_adv-3.png) 
+```
+## geom_smooth: method="auto" and size of largest group is <1000, so using loess. Use 'method = x' to change the smoothing method.
+```
 
+![](mtcars_files/figure-html/ch2_plot_adv-3.png) 
