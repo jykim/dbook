@@ -1,4 +1,4 @@
-maker	model	trans	drv	displ	year	cyl	cty	hwy	fl	class
+manufacturer	model	trans	drv	displ	year	cyl	cty	hwy	fl	class
 dodge	durango 4wd	auto(l4)	4	3.9	1999	6	13	17	r	suv
 ford	f150 pickup 4wd	manual(m5)	4	4.6	1999	8	13	16	r	pickup
 volkswagen	gti	auto(l4)	f	2	1999	4	19	26	r	compact
