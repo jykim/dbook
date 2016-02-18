@@ -1,8 +1,5 @@
 # 헬로 데이터 과학: 탐색적 데이터 분석
 Jin Young Kim  
-Thursday, April 16, 2015  
-본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 데이터 과학에 대한 좀더 자세한 설명은 [필자의 책이나](http://www.yes24.com/24/goods/24349374) [블로그를](http://www.hellodatascience.com/) 참조하시기 바랍니다.
-
 #### 개별 속성 분석하기
 
 이번에는 R로 탐색적 분석의 과정을 살펴보자. 우선 2장에서 설명한대로 GitHub에서 다운받은 파일이 있는 곳으로 작업 디렉토리를 설정하자. (단축키: Ctrl+Shift+H) 그 후 이 책에서 제공하는 R 라이브러리를 로딩하고, 이 장에서 사용할 패키지를 불러오자.
@@ -32,18 +29,18 @@ mpg = read.table("mpg.txt", header=T, sep="\t")
 kable(sample_n(mpg,10))
 ```
 
-      manufacturer   model          trans        drv    displ   year   cyl   cty   hwy  fl   class      
-----  -------------  -------------  -----------  ----  ------  -----  ----  ----  ----  ---  -----------
-206   volkswagen     passat         auto(s6)     f        2.0   2008     4    19    28  p    midsize    
-178   chevrolet      corvette       manual(m6)   r        6.2   2008     8    16    26  p    2seater    
-142   pontiac        grand prix     auto(l4)     f        3.8   1999     6    17    27  r    midsize    
-173   hyundai        tiburon        manual(m6)   f        2.7   2008     6    16    24  r    subcompact 
-198   nissan         maxima         auto(l4)     f        3.0   1999     6    18    26  r    midsize    
-228   subaru         impreza awd    auto(s4)     4        2.5   2008     4    20    25  p    compact    
-107   honda          civic          auto(l5)     f        1.8   2008     4    25    36  r    subcompact 
-105   honda          civic          auto(l5)     f        1.8   2008     4    24    36  c    subcompact 
-33    honda          civic          auto(l4)     f        1.6   1999     4    24    32  r    subcompact 
-144   ford           explorer 4wd   auto(l5)     4        4.0   2008     6    13    19  r    suv        
+      manufacturer   model                trans        drv    displ   year   cyl   cty   hwy  fl   class      
+----  -------------  -------------------  -----------  ----  ------  -----  ----  ----  ----  ---  -----------
+99    audi           a4 quattro           manual(m6)   4        3.1   2008     6    15    25  p    compact    
+80    subaru         impreza awd          auto(l4)     4        2.5   1999     4    19    26  r    subcompact 
+194   jeep           grand cherokee 4wd   auto(l5)     4        4.7   2008     8    14    19  r    suv        
+16    ford           f150 pickup 4wd      auto(l4)     4        4.2   1999     6    14    17  r    pickup     
+18    chevrolet      malibu               auto(s6)     f        3.6   2008     6    17    26  r    midsize    
+229   hyundai        sonata               manual(m5)   f        2.5   1999     6    18    26  r    midsize    
+174   toyota         camry solara         manual(m5)   f        3.0   1999     6    18    26  r    compact    
+137   dodge          durango 4wd          auto(l5)     4        4.7   2008     8    13    17  r    suv        
+93    dodge          dakota pickup 4wd    auto(l4)     4        5.2   1999     8    11    15  r    pickup     
+112   chevrolet      malibu               auto(l4)     f        3.5   2008     6    18    29  r    midsize    
 
 데이터의 값과 함께 각 속성의 데이터형도 살펴보자. R에서는 str()함수를 사용하여 주어진 데이터의 자료형을 확인할 수 있다. R에서 Factor는 카테고리형 데이터를 가리키며 levels는 각 속성에 존재하는 카테고리의 개수를 가리킨다. int나 num은 정수 및 실수형 데이터를 가리킨다.
 

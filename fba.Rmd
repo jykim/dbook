@@ -9,8 +9,6 @@ output:
     includes:
       in_header: "hds.html"
 ---
-본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 데이터 과학에 대한 좀더 자세한 설명은 [필자의 책이나](http://www.yes24.com/24/goods/24349374) [블로그를](http://www.hellodatascience.com/) 참조하시기 바랍니다.
-
 
 이번에는 R로 통계적 추론의 과정을 실습해보자. 우선 GitHub 페이지에서 다운받은 파일을 다음과 같이 불러들여 살펴보자.
 

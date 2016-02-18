@@ -9,7 +9,6 @@ output:
     includes:
       in_header: "hds.html"
 ---
-본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 데이터 과학에 대한 좀더 자세한 설명은 [필자의 책이나](http://www.yes24.com/24/goods/24349374) [블로그를](http://www.hellodatascience.com/) 참조하시기 바랍니다.
 
 ### R 작업을 위한 환경 구축
 
