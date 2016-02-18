@@ -1,6 +1,7 @@
 # 헬로 데이터 과학: 탐색적 데이터 분석
 Jin Young Kim  
 Thursday, April 16, 2015  
+본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 데이터 과학에 대한 좀더 자세한 설명은 [필자의 책이나](http://www.yes24.com/24/goods/24349374) [블로그를](http://www.hellodatascience.com/) 참조하시기 바랍니다.
 
 #### 개별 속성 분석하기
 
@@ -31,18 +32,18 @@ mpg = read.table("mpg.txt", header=T, sep="\t")
 kable(sample_n(mpg,10))
 ```
 
-      maker        model               trans        drv    displ   year   cyl   cty   hwy  fl   class      
-----  -----------  ------------------  -----------  ----  ------  -----  ----  ----  ----  ---  -----------
-68    pontiac      grand prix          auto(l4)     f        3.8   2008     6    18    28  r    midsize    
-216   toyota       toyota tacoma 4wd   manual(m5)   4        2.7   2008     4    17    22  r    pickup     
-54    land rover   range rover         auto(l4)     4        4.0   1999     8    11    15  p    suv        
-56    volkswagen   jetta               manual(m5)   f        2.0   1999     4    21    29  r    compact    
-214   audi         a4                  auto(av)     f        3.1   2008     6    18    27  p    compact    
-49    ford         mustang             auto(l4)     r        3.8   1999     6    18    25  r    subcompact 
-223   ford         f150 pickup 4wd     auto(l4)     4        4.6   1999     8    13    16  r    pickup     
-81    ford         explorer 4wd        manual(m5)   4        4.0   1999     6    15    19  r    suv        
-162   dodge        caravan 2wd         auto(l4)     f        3.3   2008     6    17    24  r    minivan    
-76    audi         a6 quattro          auto(s6)     4        3.1   2008     6    17    25  p    midsize    
+      manufacturer   model          trans        drv    displ   year   cyl   cty   hwy  fl   class      
+----  -------------  -------------  -----------  ----  ------  -----  ----  ----  ----  ---  -----------
+206   volkswagen     passat         auto(s6)     f        2.0   2008     4    19    28  p    midsize    
+178   chevrolet      corvette       manual(m6)   r        6.2   2008     8    16    26  p    2seater    
+142   pontiac        grand prix     auto(l4)     f        3.8   1999     6    17    27  r    midsize    
+173   hyundai        tiburon        manual(m6)   f        2.7   2008     6    16    24  r    subcompact 
+198   nissan         maxima         auto(l4)     f        3.0   1999     6    18    26  r    midsize    
+228   subaru         impreza awd    auto(s4)     4        2.5   2008     4    20    25  p    compact    
+107   honda          civic          auto(l5)     f        1.8   2008     4    25    36  r    subcompact 
+105   honda          civic          auto(l5)     f        1.8   2008     4    24    36  c    subcompact 
+33    honda          civic          auto(l4)     f        1.6   1999     4    24    32  r    subcompact 
+144   ford           explorer 4wd   auto(l5)     4        4.0   2008     6    13    19  r    suv        
 
 데이터의 값과 함께 각 속성의 데이터형도 살펴보자. R에서는 str()함수를 사용하여 주어진 데이터의 자료형을 확인할 수 있다. R에서 Factor는 카테고리형 데이터를 가리키며 levels는 각 속성에 존재하는 카테고리의 개수를 가리킨다. int나 num은 정수 및 실수형 데이터를 가리킨다.
 
@@ -53,17 +54,17 @@ str(mpg)
 
 ```
 ## 'data.frame':	234 obs. of  11 variables:
-##  $ maker: Factor w/ 15 levels "audi","chevrolet",..: 3 4 15 11 15 15 8 14 4 15 ...
-##  $ model: Factor w/ 38 levels "4runner 4wd",..: 14 17 21 5 21 21 35 7 29 21 ...
-##  $ trans: Factor w/ 10 levels "auto(av)","auto(l3)",..: 3 9 3 9 8 9 8 4 4 10 ...
-##  $ drv  : Factor w/ 3 levels "4","f","r": 1 1 2 2 2 2 1 2 3 2 ...
-##  $ displ: num  3.9 4.6 2 2.4 2 2 4.2 2.4 4 2 ...
-##  $ year : int  1999 1999 1999 1999 2008 1999 2008 2008 2008 2008 ...
-##  $ cyl  : int  6 8 4 4 4 4 8 4 6 4 ...
-##  $ cty  : int  13 13 19 21 22 21 12 21 16 21 ...
-##  $ hwy  : int  17 16 26 29 29 29 18 31 24 29 ...
-##  $ fl   : Factor w/ 5 levels "c","d","e","p",..: 5 5 5 5 4 5 5 5 5 4 ...
-##  $ class: Factor w/ 7 levels "2seater","compact",..: 7 5 2 2 2 2 7 3 6 2 ...
+##  $ manufacturer: Factor w/ 15 levels "audi","chevrolet",..: 3 4 15 11 15 15 8 14 4 15 ...
+##  $ model       : Factor w/ 38 levels "4runner 4wd",..: 14 17 21 5 21 21 35 7 29 21 ...
+##  $ trans       : Factor w/ 10 levels "auto(av)","auto(l3)",..: 3 9 3 9 8 9 8 4 4 10 ...
+##  $ drv         : Factor w/ 3 levels "4","f","r": 1 1 2 2 2 2 1 2 3 2 ...
+##  $ displ       : num  3.9 4.6 2 2.4 2 2 4.2 2.4 4 2 ...
+##  $ year        : int  1999 1999 1999 1999 2008 1999 2008 2008 2008 2008 ...
+##  $ cyl         : int  6 8 4 4 4 4 8 4 6 4 ...
+##  $ cty         : int  13 13 19 21 22 21 12 21 16 21 ...
+##  $ hwy         : int  17 16 26 29 29 29 18 31 24 29 ...
+##  $ fl          : Factor w/ 5 levels "c","d","e","p",..: 5 5 5 5 4 5 5 5 5 4 ...
+##  $ class       : Factor w/ 7 levels "2seater","compact",..: 7 5 2 2 2 2 7 3 6 2 ...
 ```
 
 개별 데이터를 살펴본 후에는 summary() 함수를 통해 데이터를 요약하는 다양한 통계값을 계산하여 살펴볼 수 있다. 이런 통계값은 데이터의 유형에 따라 달라진다. 예컨대 연속된 수치에 대해서는 평균 및 중간값 등을, 그리고 범주 및 순서를 나타내는 속성에 대해서는 최빈값을 계산할 수 있을 것이다. 아래는 MPG 데이터의 다양한 속성들의 통계값이다.
@@ -74,14 +75,14 @@ summary(mpg)
 ```
 
 ```
-##         maker                    model            trans    drv    
-##  dodge     :37   caravan 2wd        : 11   auto(l4)  :83   4:103  
-##  toyota    :34   ram 1500 pickup 4wd: 10   manual(m5):58   f:106  
-##  volkswagen:27   civic              :  9   auto(l5)  :39   r: 25  
-##  ford      :25   dakota pickup 4wd  :  9   manual(m6):19          
-##  chevrolet :19   jetta              :  9   auto(s6)  :16          
-##  audi      :18   mustang            :  9   auto(l6)  : 6          
-##  (Other)   :74   (Other)            :177   (Other)   :13          
+##      manufacturer                 model            trans    drv    
+##  dodge     :37    caravan 2wd        : 11   auto(l4)  :83   4:103  
+##  toyota    :34    ram 1500 pickup 4wd: 10   manual(m5):58   f:106  
+##  volkswagen:27    civic              :  9   auto(l5)  :39   r: 25  
+##  ford      :25    dakota pickup 4wd  :  9   manual(m6):19          
+##  chevrolet :19    jetta              :  9   auto(s6)  :16          
+##  audi      :18    mustang            :  9   auto(l6)  : 6          
+##  (Other)   :74    (Other)            :177   (Other)   :13          
 ##      displ            year           cyl             cty       
 ##  Min.   :1.600   Min.   :1999   Min.   :4.000   Min.   : 9.00  
 ##  1st Qu.:2.400   1st Qu.:1999   1st Qu.:4.000   1st Qu.:14.00  
@@ -209,18 +210,18 @@ ggplot(mpg, aes(hwy, cty)) +
 ```r
 # 메이저 제조사의 목록을 구하기
 majors = mpg %>% 
-	group_by(maker) %>%      # 데이터를 제조사 기준으로 그룹하여
+	group_by() %>%      # 데이터를 제조사 기준으로 그룹하여
 	summarize(count=n()) %>% # 제조사별 모델의 개수를 구하고
 	filter(count > 10)       # 적어도 10대 이상의 모델이 있는 제조사만 남긴다
 
 # 메이저 제조사의 모델을 구하기
 mpg.majors = mpg %>% 
-	filter(maker %in% majors$maker) %>% # 메이저 제조사의 차량만 남기고
+	filter(manufacturer %in% majors$manufacturer) %>% # 메이저 제조사의 차량만 남기고
 	distinct(model)                     # 차량별로 한대씩만 남긴다.
 
 # 모델별 연비에 모델 이름을 추가한 플롯
 ggplot(mpg.majors, aes(hwy, cty)) + 			            # 기본 플롯에
-	geom_text(aes(label = model, color = maker), size = 4,  # 텍스트 레이블을 더하고
+	geom_text(aes(label = model, color = manufacturer), size = 4,  # 텍스트 레이블을 더하고
 			  position=position_jitter(width=1, height=2))  # 레이블이 겹치지 않도록 노이즈를 더한다.
 ```
 
