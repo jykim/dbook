@@ -2,11 +2,12 @@
 title: '헬로 데이터 과학: 분류 실습'
 author: "Jin Young Kim"
 output:
-  word_document: default
   html_document:
     keep_md: yes
     toc: yes
     toc_depth: 2
+    includes:
+      in_header: "hds.html"
 ---
 
 이번에는 캐글에 입문하는 사람들을 위해 캐글에서 제공하는 예측 문제를 바탕으로 실제 캐글에서 제공하는 문제를 풀어 답을 제출하고, 퍼블릭 리더보드에서 순위를 확인하는 과정을 알아보자. 이 과정에서 앞서 공부한 데이터 문제 해결의 과정을 실습해보는 의미도 있다.

@@ -185,4 +185,4 @@ qplot(wt, mpg, data=cars, color=factor(cyl))
 ```
 
 ### 맺음말
-본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 데이터 과학에 대한 좀더 자세한 설명은 [책이나](http://www.yes24.com/24/goods/24349374) [저자 블로그를](http://www.hellodatascience.com/) 참조하시기 바랍니다.
+본 R 예제는 데이터 과학 입문서인 [헬로 데이터 과학](http://www.yes24.com/24/goods/24349374)의 부록으로 제공됩니다. 

@@ -17,13 +17,6 @@ load.packages(c("ggplot2", "rpart", "rpart.plot"))
 ```
 ## [1] loading ggplot2
 ## [1] loading rpart
-```
-
-```
-## Warning: package 'rpart.plot' was built under R version 3.2.3
-```
-
-```
 ## [1] loading rpart.plot
 ```
 
@@ -100,7 +93,7 @@ plot(density(train$Fare), main="", xlab="Fare Distribution")
 plot(density(train[!is.na(train$Age),]$Age), main="", xlab="Age Distribution")
 ```
 
-![](titanic_files/figure-html/unnamed-chunk-4-1.png) 
+![](titanic_files/figure-html/unnamed-chunk-4-1.png)
 
 #### 속성간 관계 분석
 
@@ -113,7 +106,7 @@ mosaicplot(table(ifelse(train$Survived==1, "Survived","Dead"), train$Sex), main=
 mosaicplot(table(ifelse(train$Survived==1, "Survived","Dead"), train$Pclass), main="", cex=1.2)
 ```
 
-![](titanic_files/figure-html/unnamed-chunk-5-1.png) 
+![](titanic_files/figure-html/unnamed-chunk-5-1.png)
 
 아래는 타이타닉호 탑승객의 나이와 생존 여부의 관계를 나타낸 그래프다. 왼쪽 박스플롯은 얼핏 생존자의 나이가 약간 어리지만 두 그룹간의 큰 차이가 없는 것으로 보인다. 하지만 오른쪽의 스케터플롯을 보면 사망자중 20대와 노인의 비율이 높고, 생존자중에는 아이의 비율이 높은 것을 알 수 있다. 이처럼 시각화의 종류에 따라 같은 데이터에서 다른 결론을 도출할 수 있다.
 
@@ -124,7 +117,7 @@ boxplot(Age ~ Survived, train, xlab="Survival", ylab="Age", cex=1.2)
 plot(Age ~ jitter(Survived), train, cex=1.2)
 ```
 
-![](titanic_files/figure-html/unnamed-chunk-6-1.png) 
+![](titanic_files/figure-html/unnamed-chunk-6-1.png)
 
 마지막으로 두 수치 속성 간의 관계를 나타내는 데에는 스케터플롯이 적절하다. 스케터플롯의 각 점에 색상과 모양을 추가하면 더 많은 정보를 한눈에 볼 수 있다. 아래 플롯은 나이와 요금의 (로그 스케일) 스케터플롯에 색상과 (생존 여부) 모양을 (성별) 추가한 결과다. 젊은 남성으로 낮은 요금을 지불한 승객의 경우 사망 확률이 매우 높은 것을 알 수 있다.
 
@@ -133,7 +126,7 @@ plot(Age ~ jitter(Survived), train, cex=1.2)
 qplot(jitter(Age), jitter(log(Fare)), data=train, color=factor(Survived), shape=factor(Sex))
 ```
 
-![](titanic_files/figure-html/unnamed-chunk-7-1.png) 
+![](titanic_files/figure-html/unnamed-chunk-7-1.png)
 
 #### 모델 만들기
 
@@ -145,7 +138,7 @@ fit <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, da
 rpart.plot(fit)
 ```
 
-![](titanic_files/figure-html/unnamed-chunk-8-1.png) 
+![](titanic_files/figure-html/unnamed-chunk-8-1.png)
 
 마지막으로 모델을 실제 테스트 데이터 적용하여 제출용 파일을 만들어 보자. R에서는 predict() 함수를 사용하여 만들어진 모델을 새로운 데이터에 적용할 수 있다.
 
